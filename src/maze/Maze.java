@@ -1,3 +1,5 @@
+package maze;
+
 import javax.swing.JFrame;
 
 public class Maze {
