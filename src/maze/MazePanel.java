@@ -9,7 +9,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -100,7 +99,7 @@ public class MazePanel extends JPanel {
             setTarget(599, 599);
             resetGrid();
             openCellsDFS.clear();
-            openCellsDFS.push(new Cell(robotStart.getX(), robotStart.getY(), null));
+            openCellsDFS.push(new Cell(robotStart.x(), robotStart.y(), null));
 
             timer = new Timer(0, actionEvent -> {
                 if (found) {
@@ -145,7 +144,7 @@ public class MazePanel extends JPanel {
             setTarget(599, 599);
             resetGrid();
             openCellsBFS.clear();
-            openCellsBFS.add(new Cell(robotStart.getX(), robotStart.getY(), null));
+            openCellsBFS.add(new Cell(robotStart.x(), robotStart.y(), null));
 
             timer = new Timer(0, actionEvent -> {
                 if (found) {
@@ -215,16 +214,16 @@ public class MazePanel extends JPanel {
                 if (grid[row][col] == EMPTY) {
                     g.setColor(Color.WHITE);
                 } else if (grid[row][col] == START) {
-                    g.setColor(Color.RED);
+                    g.setColor(Color.BLUE);
                 } else if (grid[row][col] == TARGET) {
                     g.setColor(Color.GREEN);
                 } else if (grid[row][col] == OBST) {
-                    g.setColor(Color.BLACK);
+                    g.setColor(Color.GRAY);
                 } else if (grid[row][col] == FRONTIER) {
-                    g.setColor(Color.BLUE);
+                    g.setColor(Color.RED);
                 } else if (grid[row][col] >= CLOSED) {
-                    // g.setColor(Color.CYAN);
-                    g.setColor(new Color(200, 250, 50 + 5 * grid[row][col]));
+                    g.setColor(Color.CYAN);
+                    //                    g.setColor(new Color(200, 250, 50 + 5 * grid[row][col]));
                 } else if (grid[row][col] == ROUTE) {
                     g.setColor(Color.MAGENTA);
                 }
@@ -274,8 +273,8 @@ public class MazePanel extends JPanel {
         final int[] row = {0, 0, -1, 1};
         final int[] col = {-1, 1, 0, 0};
 
-        int x = robotStart.x;
-        int y = robotStart.y;
+        int x = robotStart.x();
+        int y = robotStart.y();
 
         if (grid[x][y] == TARGET)
             return true;
@@ -304,25 +303,20 @@ public class MazePanel extends JPanel {
         final int[] col = {-1, 1, 0, 0};
 
         Deque<Cell> openCells = new ArrayDeque<>();
-        int routeMarker = 0;
 
         currentCell = null;
-        openCells.push(new Cell(robotStart.x, robotStart.y, null));
+        openCells.push(new Cell(robotStart.x(), robotStart.y(), null));
 
         while (!openCells.isEmpty() && !found) {
             currentCell = openCells.pop();
 
             for (int i = 0; i < 4; i++) {
-                if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == TARGET) {
-                    routeMarker++;
+                if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == TARGET) {
                     found = true;
                     break;
-                } else if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != CLOSED + routeMarker
-                        && grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != OBST
-                        && grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != START) {
-
-                    openCells.push(new Cell(currentCell.getX() + row[i], currentCell.getY() + col[i], currentCell));
-                    grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] = CLOSED + routeMarker;
+                } else if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == EMPTY) {
+                    openCells.push(new Cell(currentCell.x() + row[i], currentCell.y() + col[i], currentCell));
+                    grid[currentCell.x() + row[i]][currentCell.y() + col[i]] = CLOSED;
                 }
             }
         }
@@ -339,15 +333,15 @@ public class MazePanel extends JPanel {
 
         if (!openCellsDFS.isEmpty()) {
             currentCell = openCellsDFS.pop();
-            if (grid[currentCell.getX()][currentCell.getY()] != START)
-                grid[currentCell.getX()][currentCell.getY()] = CLOSED;
+            if (grid[currentCell.x()][currentCell.y()] != START)
+                grid[currentCell.x()][currentCell.y()] = CLOSED;
             for (int i = 0; i < 4; i++) {
-                if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == TARGET) {
+                if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == TARGET) {
                     found = true;
                     return;
-                } else if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == EMPTY) {
-                    openCellsDFS.push(new Cell(currentCell.getX() + row[i], currentCell.getY() + col[i], currentCell));
-                    grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] = FRONTIER;
+                } else if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == EMPTY) {
+                    openCellsDFS.push(new Cell(currentCell.x() + row[i], currentCell.y() + col[i], currentCell));
+                    grid[currentCell.x() + row[i]][currentCell.y() + col[i]] = FRONTIER;
                 }
             }
         }
@@ -361,24 +355,19 @@ public class MazePanel extends JPanel {
         final int[] col = {-1, 1, 0, 0};
 
         Queue<Cell> openCells = new LinkedList<>();
-        int routeMarker = 0;
 
         currentCell = null;
-        openCells.add(new Cell(robotStart.x, robotStart.y, null));
+        openCells.add(new Cell(robotStart.x(), robotStart.y(), null));
 
         while (!openCells.isEmpty() && !found) {
             currentCell = openCells.poll();
             for (int i = 0; i < 4; i++) {
-                if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == TARGET) {
-                    routeMarker++;
+                if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == TARGET) {
                     found = true;
                     break;
-                } else if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != CLOSED + routeMarker
-                        && grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != OBST
-                        && grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] != START) {
-
-                    openCells.add(new Cell(currentCell.getX() + row[i], currentCell.getY() + col[i], currentCell));
-                    grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] = CLOSED + routeMarker;
+                } else if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == EMPTY) {
+                    openCells.add(new Cell(currentCell.x() + row[i], currentCell.y() + col[i], currentCell));
+                    grid[currentCell.x() + row[i]][currentCell.y() + col[i]] = CLOSED;
                 }
             }
         }
@@ -395,15 +384,15 @@ public class MazePanel extends JPanel {
 
         if (!openCellsBFS.isEmpty()) {
             currentCell = openCellsBFS.poll();
-            if (grid[currentCell.getX()][currentCell.getY()] != START)
-                grid[currentCell.getX()][currentCell.getY()] = CLOSED;
+            if (grid[currentCell.x()][currentCell.y()] != START)
+                grid[currentCell.x()][currentCell.y()] = CLOSED;
             for (int i = 0; i < 4; i++) {
-                if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == TARGET) {
+                if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == TARGET) {
                     found = true;
                     return;
-                } else if (grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] == EMPTY) {
-                    openCellsBFS.add(new Cell(currentCell.getX() + row[i], currentCell.getY() + col[i], currentCell));
-                    grid[currentCell.getX() + row[i]][currentCell.getY() + col[i]] = FRONTIER;
+                } else if (grid[currentCell.x() + row[i]][currentCell.y() + col[i]] == EMPTY) {
+                    openCellsBFS.add(new Cell(currentCell.x() + row[i], currentCell.y() + col[i], currentCell));
+                    grid[currentCell.x() + row[i]][currentCell.y() + col[i]] = FRONTIER;
                 }
             }
         }
@@ -414,34 +403,13 @@ public class MazePanel extends JPanel {
      */
     private void buildRoute() {
         if (currentCell != null) {
-            while (currentCell.prev != null) {
-                grid[currentCell.getX()][currentCell.getY()] = ROUTE;
-                currentCell = currentCell.prev;
+            while (currentCell.prev() != null) {
+                grid[currentCell.x()][currentCell.y()] = ROUTE;
+                currentCell = currentCell.prev();
             }
         }
     }
 
-    /**
-     * Nested class Cell
-     */
-    private class Cell {
-        private int x, y;
-        private Cell prev;
-
-        public Cell(int x, int y, Cell prev) {
-            this.x = x;
-            this.y = y;
-            this.prev = prev;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
+    private record Cell(int x, int y, Cell prev) {
     }
-
-} // end class maze.MazePanel
+}
